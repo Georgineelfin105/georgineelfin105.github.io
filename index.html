@@ -24,21 +24,19 @@
         }
         iframe {
             width: 100%;
-            /* Add extra height to compensate for the cropped navbar */
             height: calc(100vh + 80px);
             border: none;
             display: block;
-            /* Shift the iframe up to hide the top navbar (80px tall) */
             margin-top: -80px;
+        }
+        @media (max-width: 576px) {
+            iframe {
+                height: calc(100vh + 70px);
+                margin-top: -70px;
+            }
         }
     </style>
 </head>
 <body>
     <div class="frame-wrap">
-        <iframe src="https://www.norielix.com/mahad" title="Mahad Profile">
-            Your browser does not support iframes.
-            <a href="https://www.norielix.com/mahad">Click here to view my profile</a>.
-        </iframe>
-    </div>
-</body>
-</html>
+        <iframe src="https://www.norielix.com/mahad"
