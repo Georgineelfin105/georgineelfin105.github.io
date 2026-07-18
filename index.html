@@ -28,50 +28,68 @@
             padding: 0;
             box-sizing: border-box;
         }
-        html, body {
+        html, body, #profile-container {
             width: 100%;
             height: 100%;
-            overflow: hidden;
             background-color: #ffffff;
-        }
-        iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
-            display: block;
         }
     </style>
 </head>
 <body>
 
-    <iframe 
-        id="profile-frame"
-        src="https://norielix.com" 
-        title="About Mohammad Mahad | Founder, Norielix"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-top-navigation allow-top-navigation-by-user-activation">
-        Your browser does not support inline frames. 
-        <a href="https://norielix.com">Click here to view my profile</a>.
-    </iframe>
+    <div id="profile-container"></div>
 
     <script>
-        (function() {
-            const frame = document.getElementById('profile-frame');
+        (async function() {
+            const proxy = "https://corsproxy.io";
+            const target = "https://norielix.com";
+            const wrapper = document.getElementById("profile-container");
             
-            window.addEventListener('blur', function() {
-                if (document.activeElement === frame) {
-                    setTimeout(function() {
-                        try {
-                            if (frame.contentWindow.location.href !== "https://norielix.com") {
-                                window.top.location.href = "https://norielix.com";
-                            }
-                        } catch(e) {
-                            window.top.location.href = "https://norielix.com";
+            try {
+                const res = await fetch(proxy + encodeURIComponent(target));
+                if (!res.ok) throw new Error();
+                let html = await res.text();
+                
+                html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+                
+                const shadow = wrapper.attachShadow({ mode: 'open' });
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(html, 'text/html');
+                
+                doc.querySelectorAll('a').forEach(link => {
+                    const href = link.getAttribute('href');
+                    if (href && !href.startsWith('http') && !href.startsWith('//')) {
+                        link.setAttribute('href', 'https://norielix.com' + (href.startsWith('/') ? '' : '/') + href);
+                    }
+                    link.setAttribute('target', '_top');
+                });
+
+                doc.querySelectorAll('img, link, script').forEach(el => {
+                    ['src', 'href'].forEach(attr => {
+                        const val = el.getAttribute(attr);
+                        if (val && !val.startsWith('http') && !val.startsWith('//') && !val.startsWith('data:')) {
+                            el.setAttribute(attr, 'https://norielix.com' + (val.startsWith('/') ? '' : '/') + val);
                         }
-                    }, 200);
+                    });
+                });
+
+                const base = document.createElement('base');
+                base.href = "https://norielix.com/";
+                shadow.appendChild(base);
+
+                const styles = doc.querySelectorAll('link[rel="stylesheet"], style');
+                styles.forEach(style => shadow.appendChild(style.cloneNode(true)));
+
+                const contentWrapper = document.createElement('div');
+                while (doc.body.firstChild) {
+                    contentWrapper.appendChild(doc.body.firstChild);
                 }
-            });
+                shadow.appendChild(contentWrapper);
+
+            } catch (err) {
+                window.location.replace(target);
+            }
         })();
     </script>
-
 </body>
 </html>
