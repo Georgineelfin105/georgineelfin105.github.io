@@ -33,11 +33,6 @@
             border-radius: 20px;
             padding: 48px 40px;
             box-shadow: 0 8px 30px -8px rgba(0, 20, 40, 0.08);
-            transition: box-shadow 0.3s ease;
-        }
-        
-        .card:hover {
-            box-shadow: 0 12px 40px -8px rgba(0, 20, 40, 0.12);
         }
         
         #loading {
@@ -45,7 +40,22 @@
             color: #64748b;
             padding: 60px 0;
             font-size: 1.1rem;
-            letter-spacing: 0.3px;
+        }
+        
+        #loading .spinner {
+            display: inline-block;
+            width: 40px;
+            height: 40px;
+            border: 4px solid #e2e8f0;
+            border-top: 4px solid #1e40af;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin-bottom: 16px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
         
         #loading::after {
@@ -70,7 +80,6 @@
             font-weight: 700;
             font-size: 2.2rem;
             margin-bottom: 28px;
-            letter-spacing: -0.5px;
         }
         
         #content img {
@@ -82,7 +91,6 @@
         
         #content ul {
             margin: 1.2rem 0 1.8rem 2rem;
-            padding-left: 0.5rem;
         }
         
         #content ul li {
@@ -119,12 +127,10 @@
         .error-container h3 {
             color: #dc2626;
             margin-bottom: 8px;
-            font-weight: 600;
         }
         
         .error-container p {
             color: #94a3b8;
-            font-size: 0.95rem;
         }
         
         .error-container .retry-btn {
@@ -147,11 +153,9 @@
             body {
                 padding: 24px 16px;
             }
-            
             .card {
                 padding: 28px 20px;
             }
-            
             #content h1 {
                 font-size: 1.8rem;
             }
@@ -160,7 +164,10 @@
 </head>
 <body>
     <div class="card">
-        <div id="loading">Loading profile</div>
+        <div id="loading">
+            <div class="spinner"></div>
+            <div>Loading profile</div>
+        </div>
         <div id="content"></div>
     </div>
 
@@ -168,17 +175,17 @@
         // =============================================
         // CONFIGURATION
         // =============================================
-        // Use the proxy with redirect following
-        const API_URL = 'https://www.norielix.com/api/proxy.php';
+        // PRIMARY: Your secure proxy
+        const PRIMARY_PROXY = 'https://www.norielix.com/api/secure-proxy.php';
         
-        // FALLBACK: If proxy fails, try using allorigins
-        const FALLBACK_URL = 'https://api.allorigins.win/raw?url=' + 
-            encodeURIComponent('https://www.norielix.com/admin/api/mahad.php');
+        // FALLBACK: Free CORS proxies (if your proxy fails)
+        const FALLBACK_PROXIES = [
+            'https://corsproxy.io/?' + encodeURIComponent('https://www.norielix.com/admin/api/mahad.php'),
+            'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.norielix.com/admin/api/mahad.php')
+        ];
         
-        const RETRY_DELAY = 3000;
-        let retryCount = 0;
-        const MAX_RETRIES = 3;
-        let useFallback = false;
+        const MAX_RETRIES = 2;
+        const RETRY_DELAY = 2000;
         
         // =============================================
         // MAIN FUNCTION
@@ -189,88 +196,112 @@
             
             loading.style.display = 'block';
             content.style.display = 'none';
-            loading.innerHTML = 'Loading profile';
+            loading.innerHTML = `
+                <div class="spinner"></div>
+                <div>Loading profile</div>
+            `;
             
-            try {
-                const url = useFallback ? FALLBACK_URL : API_URL;
-                console.log('📡 Fetching from:', url);
+            // Try primary proxy first, then fallbacks
+            const urlsToTry = [PRIMARY_PROXY, ...FALLBACK_PROXIES];
+            let lastError = null;
+            
+            for (let i = 0; i < urlsToTry.length; i++) {
+                const url = urlsToTry[i];
+                const isFallback = i > 0;
                 
-                const response = await fetch(url, {
-                    method: 'GET',
-                    cache: 'no-store',
-                    headers: {
-                        'Cache-Control': 'no-cache',
-                        'Pragma': 'no-cache'
+                try {
+                    console.log(`📡 Attempt ${i + 1}/${urlsToTry.length}:`, url);
+                    
+                    if (isFallback) {
+                        loading.innerHTML = `
+                            <div class="spinner"></div>
+                            <div>Using fallback proxy... (${i}/${urlsToTry.length - 1})</div>
+                        `;
                     }
-                });
-                
-                console.log('📥 Response status:', response.status);
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const data = await response.json();
-                console.log('✅ Data received:', data);
-                
-                if (data.error) {
-                    throw new Error(data.error + (data.message ? ': ' + data.message : ''));
-                }
-                
-                if (!data.title || !data.content) {
-                    throw new Error('Incomplete data received from server');
-                }
-                
-                document.title = data.title + ' | Norielix';
-                
-                let html = `<h1>${escapeHtml(data.title)}</h1>`;
-                
-                if (data.image) {
-                    html += `<img src="${escapeHtml(data.image)}" alt="${escapeHtml(data.title)}" loading="lazy">`;
-                }
-                
-                html += data.content;
-                
-                content.innerHTML = html;
-                loading.style.display = 'none';
-                content.style.display = 'block';
-                
-                console.log('✅ Profile loaded successfully');
-                retryCount = 0;
-                
-            } catch (error) {
-                console.error('❌ Error loading profile:', error);
-                
-                // If using main proxy fails, try fallback
-                if (!useFallback) {
-                    console.log('🔄 Trying fallback proxy...');
-                    useFallback = true;
-                    setTimeout(loadProfile, 1000);
+                    
+                    const response = await fetch(url, {
+                        method: 'GET',
+                        cache: 'no-store',
+                        headers: {
+                            'Cache-Control': 'no-cache',
+                            'Pragma': 'no-cache'
+                        }
+                    });
+                    
+                    if (!response.ok) {
+                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                    }
+                    
+                    const data = await response.json();
+                    
+                    // Handle different proxy response formats
+                    let profileData = data;
+                    if (data.contents) {
+                        // allorigins format
+                        try {
+                            profileData = JSON.parse(data.contents);
+                        } catch (e) {
+                            throw new Error('Failed to parse allorigins response');
+                        }
+                    }
+                    
+                    // Check for errors
+                    if (profileData.error) {
+                        throw new Error(profileData.error + (profileData.message ? ': ' + profileData.message : ''));
+                    }
+                    
+                    // Validate data
+                    if (!profileData.title || !profileData.content) {
+                        throw new Error('Incomplete data received');
+                    }
+                    
+                    // SUCCESS - Display the profile
+                    displayProfile(profileData);
+                    console.log('✅ Profile loaded successfully (attempt ' + (i + 1) + ')');
                     return;
-                }
-                
-                if (retryCount < MAX_RETRIES) {
-                    retryCount++;
-                    loading.innerHTML = `Retrying... (${retryCount}/${MAX_RETRIES})`;
-                    console.log(`🔄 Retry ${retryCount}/${MAX_RETRIES} in ${RETRY_DELAY}ms`);
-                    setTimeout(loadProfile, RETRY_DELAY);
-                } else {
-                    loading.innerHTML = `
-                        <div class="error-container">
-                            <div class="icon">⚠️</div>
-                            <h3>Failed to load profile</h3>
-                            <p>Please refresh the page or try again later</p>
-                            <p style="font-size: 0.8rem; color: #cbd5e1; margin-top: 12px;">
-                                ${escapeHtml(error.message)}
-                            </p>
-                            <button class="retry-btn" onclick="loadProfile()">
-                                Try Again
-                            </button>
-                        </div>
-                    `;
-                    loading.style.display = 'block';
+                    
+                } catch (error) {
+                    console.error(`❌ Attempt ${i + 1} failed:`, error.message);
+                    lastError = error;
+                    
+                    // If this was the last attempt, show error
+                    if (i === urlsToTry.length - 1) {
+                        throw error;
+                    }
+                    
+                    // Wait before retry (with exponential backoff)
+                    const delay = RETRY_DELAY * (i + 1);
+                    await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
+            
+            // If we get here, all attempts failed
+            throw lastError || new Error('All attempts failed');
+        }
+        
+        // =============================================
+        // DISPLAY FUNCTION
+        // =============================================
+        function displayProfile(data) {
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('content');
+            
+            // Update page title
+            document.title = data.title + ' | Norielix';
+            
+            // Build HTML
+            let html = `<h1>${escapeHtml(data.title)}</h1>`;
+            
+            if (data.image) {
+                html += `<img src="${escapeHtml(data.image)}" alt="${escapeHtml(data.title)}" loading="lazy">`;
+            }
+            
+            html += data.content;
+            
+            // Display content
+            content.innerHTML = html;
+            loading.style.display = 'none';
+            content.style.display = 'block';
         }
         
         // =============================================
@@ -287,11 +318,58 @@
                 .replace(/'/g, "&#039;");
         }
         
+        function showError(error) {
+            const loading = document.getElementById('loading');
+            loading.innerHTML = `
+                <div class="error-container">
+                    <div class="icon">⚠️</div>
+                    <h3>Failed to load profile</h3>
+                    <p>Please refresh the page or try again later</p>
+                    <p style="font-size: 0.8rem; color: #cbd5e1; margin-top: 12px; word-break: break-all;">
+                        ${escapeHtml(error.message || 'Unknown error')}
+                    </p>
+                    <button class="retry-btn" onclick="handleRetry()">
+                        🔄 Try Again
+                    </button>
+                </div>
+            `;
+            loading.style.display = 'block';
+        }
+        
+        // =============================================
+        // RETRY HANDLER
+        // =============================================
+        let retryCount = 0;
+        const MAX_RETRY_COUNT = 3;
+        
+        function handleRetry() {
+            if (retryCount >= MAX_RETRY_COUNT) {
+                const loading = document.getElementById('loading');
+                loading.innerHTML = `
+                    <div class="error-container">
+                        <div class="icon">❌</div>
+                        <h3>Unable to load profile</h3>
+                        <p>Please try again later or contact support</p>
+                        <button class="retry-btn" onclick="location.reload()">
+                            🔄 Refresh Page
+                        </button>
+                    </div>
+                `;
+                loading.style.display = 'block';
+                return;
+            }
+            
+            retryCount++;
+            loadProfile().catch(showError);
+        }
+        
         // =============================================
         // START
         // =============================================
         
-        document.addEventListener('DOMContentLoaded', loadProfile);
+        document.addEventListener('DOMContentLoaded', () => {
+            loadProfile().catch(showError);
+        });
     </script>
 </body>
 </html>
