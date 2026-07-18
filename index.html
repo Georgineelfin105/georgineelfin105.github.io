@@ -168,11 +168,17 @@
         // =============================================
         // CONFIGURATION
         // =============================================
-        // Using your own proxy on norielix.com
+        // Use the proxy with redirect following
         const API_URL = 'https://www.norielix.com/api/proxy.php';
+        
+        // FALLBACK: If proxy fails, try using allorigins
+        const FALLBACK_URL = 'https://api.allorigins.win/raw?url=' + 
+            encodeURIComponent('https://www.norielix.com/admin/api/mahad.php');
+        
         const RETRY_DELAY = 3000;
         let retryCount = 0;
         const MAX_RETRIES = 3;
+        let useFallback = false;
         
         // =============================================
         // MAIN FUNCTION
@@ -186,9 +192,10 @@
             loading.innerHTML = 'Loading profile';
             
             try {
-                console.log('📡 Fetching from proxy:', API_URL);
+                const url = useFallback ? FALLBACK_URL : API_URL;
+                console.log('📡 Fetching from:', url);
                 
-                const response = await fetch(API_URL, {
+                const response = await fetch(url, {
                     method: 'GET',
                     cache: 'no-store',
                     headers: {
@@ -200,8 +207,7 @@
                 console.log('📥 Response status:', response.status);
                 
                 if (!response.ok) {
-                    const errorText = await response.text();
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}\n${errorText}`);
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
                 
                 const data = await response.json();
@@ -234,6 +240,14 @@
                 
             } catch (error) {
                 console.error('❌ Error loading profile:', error);
+                
+                // If using main proxy fails, try fallback
+                if (!useFallback) {
+                    console.log('🔄 Trying fallback proxy...');
+                    useFallback = true;
+                    setTimeout(loadProfile, 1000);
+                    return;
+                }
                 
                 if (retryCount < MAX_RETRIES) {
                     retryCount++;
