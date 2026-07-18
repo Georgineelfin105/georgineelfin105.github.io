@@ -1,55 +1,13 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mohammad Mahad — Founder, Norielix</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <style>
-        * { box-sizing: border-box; }
-        body {
-            font-family: 'Inter', sans-serif;
-            background: linear-gradient(145deg, #ffffff 0%, #f5f7fd 100%);
-            color: #0b1e42;
-            line-height: 1.7;
-            margin: 0;
-            padding: 48px 20px;
-        }
-        .card {
-            max-width: 760px;
-            margin: 0 auto;
-            background: #fff;
-            border: 1px solid #e9eef2;
-            border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 8px 20px -6px rgba(0,20,40,0.08);
-        }
-        h1 { color: #1e40af; text-align: center; margin-bottom: 24px; }
-        #content img { max-width: 100%; border-radius: 12px; }
-        #content ul { margin: 1rem 0 1.5rem 2rem; }
-        #loading { text-align: center; color: #64748b; padding: 60px 0; }
-    </style>
-</head>
-<body>
-    <div class="card">
-        <div id="loading">Loading…</div>
-        <div id="content" style="display:none;"></div>
-    </div>
-
-    <script>
-        fetch('https://www.norielix.com/api/mahad.php')
-            .then(res => res.json())
-            .then(data => {
-                document.title = data.title + ' | Norielix';
-                document.getElementById('content').innerHTML =
-                    '<h1>' + data.title + '</h1>' + data.content;
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-            })
-            .catch(err => {
-                document.getElementById('loading').textContent = 'Failed to load profile.';
-                console.error(err);
-            });
-    </script>
-</body>
-</html>
+fetch('https://www.norielix.com/admin/api/mahad.php')
+    .then(res => res.json())
+    .then(data => {
+        document.title = data.title + ' | Norielix';
+        document.getElementById('content').innerHTML =
+            '<h1>' + data.title + '</h1>' + data.content;
+        document.getElementById('loading').style.display = 'none';
+        document.getElementById('content').style.display = 'block';
+    })
+    .catch(err => {
+        document.getElementById('loading').textContent = 'Failed to load profile.';
+        console.error(err);
+    });
