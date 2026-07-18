@@ -3,61 +3,298 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
     <title>Mohammad Mahad — Founder, Norielix</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * { box-sizing: border-box; }
+        /* ===== RESET & BASE ===== */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             background: linear-gradient(145deg, #ffffff 0%, #f5f7fd 100%);
             color: #0b1e42;
             line-height: 1.7;
             margin: 0;
             padding: 48px 20px;
+            min-height: 100vh;
         }
+        
+        /* ===== CARD CONTAINER ===== */
         .card {
             max-width: 760px;
             margin: 0 auto;
-            background: #fff;
+            background: #ffffff;
             border: 1px solid #e9eef2;
             border-radius: 20px;
-            padding: 40px;
-            box-shadow: 0 8px 20px -6px rgba(0,20,40,0.08);
+            padding: 48px 40px;
+            box-shadow: 0 8px 30px -8px rgba(0, 20, 40, 0.08);
+            transition: box-shadow 0.3s ease;
         }
-        h1 { color: #1e40af; text-align: center; margin-bottom: 24px; }
-        #content img { max-width: 100%; border-radius: 12px; }
-        #content ul { margin: 1rem 0 1.5rem 2rem; }
-        #loading { text-align: center; color: #64748b; padding: 60px 0; }
+        
+        .card:hover {
+            box-shadow: 0 12px 40px -8px rgba(0, 20, 40, 0.12);
+        }
+        
+        /* ===== LOADING STATE ===== */
+        #loading {
+            text-align: center;
+            color: #64748b;
+            padding: 60px 0;
+            font-size: 1.1rem;
+            letter-spacing: 0.3px;
+        }
+        
+        #loading::after {
+            content: '...';
+            animation: dots 1.5s steps(3, end) infinite;
+        }
+        
+        @keyframes dots {
+            0% { content: ''; }
+            33% { content: '.'; }
+            66% { content: '..'; }
+            100% { content: '...'; }
+        }
+        
+        /* ===== CONTENT STYLES ===== */
+        #content {
+            display: none;
+        }
+        
+        #content h1 {
+            color: #1e40af;
+            text-align: center;
+            font-weight: 700;
+            font-size: 2.2rem;
+            margin-bottom: 28px;
+            letter-spacing: -0.5px;
+        }
+        
+        #content img {
+            max-width: 100%;
+            border-radius: 12px;
+            margin: 24px 0;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
+        }
+        
+        #content ul {
+            margin: 1.2rem 0 1.8rem 2rem;
+            padding-left: 0.5rem;
+        }
+        
+        #content ul li {
+            margin-bottom: 0.6rem;
+            list-style-type: disc;
+        }
+        
+        #content strong {
+            color: #1e40af;
+        }
+        
+        #content a {
+            color: #1e40af;
+            text-decoration: none;
+            font-weight: 500;
+            border-bottom: 2px solid #e2e8f0;
+            transition: border-color 0.2s ease;
+        }
+        
+        #content a:hover {
+            border-bottom-color: #1e40af;
+        }
+        
+        /* ===== ERROR STATE ===== */
+        .error-container {
+            text-align: center;
+            padding: 50px 20px;
+        }
+        
+        .error-container .icon {
+            font-size: 3rem;
+            margin-bottom: 16px;
+        }
+        
+        .error-container h3 {
+            color: #dc2626;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+        
+        .error-container p {
+            color: #94a3b8;
+            font-size: 0.95rem;
+        }
+        
+        .error-container .retry-btn {
+            margin-top: 20px;
+            padding: 10px 32px;
+            background: #1e40af;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s ease;
+        }
+        
+        .error-container .retry-btn:hover {
+            background: #1e3a8a;
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 640px) {
+            body {
+                padding: 24px 16px;
+            }
+            
+            .card {
+                padding: 28px 20px;
+            }
+            
+            #content h1 {
+                font-size: 1.8rem;
+            }
+        }
     </style>
 </head>
 <body>
     <div class="card">
-        <div id="loading">Loading…</div>
-        <div id="content" style="display:none;"></div>
+        <!-- Loading State -->
+        <div id="loading">Loading profile</div>
+        
+        <!-- Content Area -->
+        <div id="content"></div>
     </div>
 
     <script>
-        // ✅ FIXED: Using the full URL to your PHP file
+        // =============================================
+        // CONFIGURATION
+        // =============================================
         const API_URL = 'https://www.norielix.com/admin/api/mahad.php';
+        const RETRY_DELAY = 3000; // 3 seconds
+        let retryCount = 0;
+        const MAX_RETRIES = 3;
         
-        fetch(API_URL)
-            .then(res => {
-                if (!res.ok) {
-                    throw new Error(`HTTP error! status: ${res.status}`);
+        // =============================================
+        // MAIN FUNCTION
+        // =============================================
+        async function loadProfile() {
+            const loading = document.getElementById('loading');
+            const content = document.getElementById('content');
+            
+            // Show loading
+            loading.style.display = 'block';
+            content.style.display = 'none';
+            loading.innerHTML = 'Loading profile';
+            
+            try {
+                console.log('📡 Fetching from:', API_URL);
+                
+                const response = await fetch(API_URL, {
+                    method: 'GET',
+                    cache: 'no-store',
+                    headers: {
+                        'Cache-Control': 'no-cache',
+                        'Pragma': 'no-cache'
+                    }
+                });
+                
+                console.log('📥 Response status:', response.status);
+                
+                // Check if response is OK
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
                 }
-                return res.json();
-            })
-            .then(data => {
+                
+                // Parse JSON
+                const data = await response.json();
+                console.log('✅ Data received:', data);
+                
+                // Validate data
+                if (!data.title || !data.content) {
+                    throw new Error('Incomplete data received');
+                }
+                
+                // Update page title
                 document.title = data.title + ' | Norielix';
-                document.getElementById('content').innerHTML =
-                    '<h1>' + data.title + '</h1>' + data.content;
-                document.getElementById('loading').style.display = 'none';
-                document.getElementById('content').style.display = 'block';
-            })
-            .catch(err => {
-                document.getElementById('loading').textContent = 'Failed to load profile.';
-                console.error('Fetch error:', err);
-            });
+                
+                // Build HTML
+                let html = `<h1>${escapeHtml(data.title)}</h1>`;
+                
+                // Add image if exists
+                if (data.image) {
+                    html += `<img src="${escapeHtml(data.image)}" alt="${escapeHtml(data.title)}" loading="lazy">`;
+                }
+                
+                // Add content
+                html += data.content;
+                
+                // Display content
+                content.innerHTML = html;
+                loading.style.display = 'none';
+                content.style.display = 'block';
+                
+                console.log('✅ Profile loaded successfully');
+                retryCount = 0; // Reset retry count on success
+                
+            } catch (error) {
+                console.error('❌ Error loading profile:', error);
+                
+                // Check if we should retry
+                if (retryCount < MAX_RETRIES) {
+                    retryCount++;
+                    loading.innerHTML = `Retrying... (${retryCount}/${MAX_RETRIES})`;
+                    console.log(`🔄 Retry ${retryCount}/${MAX_RETRIES} in ${RETRY_DELAY}ms`);
+                    
+                    setTimeout(loadProfile, RETRY_DELAY);
+                } else {
+                    // Show error message
+                    loading.innerHTML = `
+                        <div class="error-container">
+                            <div class="icon">⚠️</div>
+                            <h3>Failed to load profile</h3>
+                            <p>Please refresh the page or try again later</p>
+                            <p style="font-size: 0.8rem; color: #cbd5e1; margin-top: 12px;">
+                                ${error.message}
+                            </p>
+                            <button class="retry-btn" onclick="loadProfile()">
+                                Try Again
+                            </button>
+                        </div>
+                    `;
+                    loading.style.display = 'block';
+                }
+            }
+        }
+        
+        // =============================================
+        // UTILITY FUNCTIONS
+        // =============================================
+        
+        // Escape HTML to prevent XSS
+        function escapeHtml(unsafe) {
+            if (!unsafe) return '';
+            return unsafe
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;")
+                .replace(/"/g, "&quot;")
+                .replace(/'/g, "&#039;");
+        }
+        
+        // =============================================
+        // START
+        // =============================================
+        
+        // Load profile when page loads
+        document.addEventListener('DOMContentLoaded', loadProfile);
     </script>
 </body>
 </html>
