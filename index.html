@@ -4,27 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
-    <meta http-equiv="Pragma" content="no-cache">
-    <meta http-equiv="Expires" content="0">
     <title>Mohammad Mahad — Founder, Norielix</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
-        
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            font-family: 'Inter', sans-serif;
             background: linear-gradient(145deg, #ffffff 0%, #f5f7fd 100%);
             color: #0b1e42;
             line-height: 1.7;
-            margin: 0;
             padding: 48px 20px;
             min-height: 100vh;
         }
-        
         .card {
             max-width: 760px;
             margin: 0 auto;
@@ -34,14 +25,11 @@
             padding: 48px 40px;
             box-shadow: 0 8px 30px -8px rgba(0, 20, 40, 0.08);
         }
-        
         #loading {
             text-align: center;
             color: #64748b;
             padding: 60px 0;
-            font-size: 1.1rem;
         }
-        
         #loading .spinner {
             display: inline-block;
             width: 40px;
@@ -52,28 +40,11 @@
             animation: spin 0.8s linear infinite;
             margin-bottom: 16px;
         }
-        
         @keyframes spin {
             0% { transform: rotate(0deg); }
             100% { transform: rotate(360deg); }
         }
-        
-        #loading::after {
-            content: '...';
-            animation: dots 1.5s steps(3, end) infinite;
-        }
-        
-        @keyframes dots {
-            0% { content: ''; }
-            33% { content: '.'; }
-            66% { content: '..'; }
-            100% { content: '...'; }
-        }
-        
-        #content {
-            display: none;
-        }
-        
+        #content { display: none; }
         #content h1 {
             color: #1e40af;
             text-align: center;
@@ -81,59 +52,33 @@
             font-size: 2.2rem;
             margin-bottom: 28px;
         }
-        
         #content img {
             max-width: 100%;
             border-radius: 12px;
             margin: 24px 0;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.06);
         }
-        
         #content ul {
             margin: 1.2rem 0 1.8rem 2rem;
         }
-        
         #content ul li {
             margin-bottom: 0.6rem;
             list-style-type: disc;
         }
-        
-        #content strong {
-            color: #1e40af;
-        }
-        
+        #content strong { color: #1e40af; }
         #content a {
             color: #1e40af;
             text-decoration: none;
-            font-weight: 500;
             border-bottom: 2px solid #e2e8f0;
-            transition: border-color 0.2s ease;
         }
-        
-        #content a:hover {
-            border-bottom-color: #1e40af;
-        }
-        
+        #content a:hover { border-bottom-color: #1e40af; }
         .error-container {
             text-align: center;
             padding: 50px 20px;
         }
-        
-        .error-container .icon {
-            font-size: 3rem;
-            margin-bottom: 16px;
-        }
-        
-        .error-container h3 {
-            color: #dc2626;
-            margin-bottom: 8px;
-        }
-        
-        .error-container p {
-            color: #94a3b8;
-        }
-        
-        .error-container .retry-btn {
+        .error-container .icon { font-size: 3rem; margin-bottom: 16px; }
+        .error-container h3 { color: #dc2626; margin-bottom: 8px; }
+        .error-container p { color: #94a3b8; }
+        .retry-btn {
             margin-top: 20px;
             padding: 10px 32px;
             background: #1e40af;
@@ -142,23 +87,12 @@
             border-radius: 8px;
             font-size: 1rem;
             cursor: pointer;
-            transition: background 0.2s ease;
         }
-        
-        .error-container .retry-btn:hover {
-            background: #1e3a8a;
-        }
-        
+        .retry-btn:hover { background: #1e3a8a; }
         @media (max-width: 640px) {
-            body {
-                padding: 24px 16px;
-            }
-            .card {
-                padding: 28px 20px;
-            }
-            #content h1 {
-                font-size: 1.8rem;
-            }
+            body { padding: 24px 16px; }
+            .card { padding: 28px 20px; }
+            #content h1 { font-size: 1.8rem; }
         }
     </style>
 </head>
@@ -173,23 +107,15 @@
 
     <script>
         // =============================================
-        // CONFIGURATION
+        // USING THE WORKING API DIRECTLY
         // =============================================
-        // PRIMARY: Your secure proxy
-        const PRIMARY_PROXY = 'https://www.norielix.com/api/secure-proxy.php';
+        // Your API is at /api/mahad.php and returns 200 OK
+        const API_URL = 'https://www.norielix.com/api/mahad.php';
         
-        // FALLBACK: Free CORS proxies (if your proxy fails)
-        const FALLBACK_PROXIES = [
-            'https://corsproxy.io/?' + encodeURIComponent('https://www.norielix.com/admin/api/mahad.php'),
-            'https://api.allorigins.win/raw?url=' + encodeURIComponent('https://www.norielix.com/admin/api/mahad.php')
-        ];
+        // Fallback: corsproxy.io if the above doesn't work
+        const FALLBACK_URL = 'https://corsproxy.io/?' + 
+            encodeURIComponent('https://www.norielix.com/admin/api/mahad.php');
         
-        const MAX_RETRIES = 2;
-        const RETRY_DELAY = 2000;
-        
-        // =============================================
-        // MAIN FUNCTION
-        // =============================================
         async function loadProfile() {
             const loading = document.getElementById('loading');
             const content = document.getElementById('content');
@@ -201,26 +127,15 @@
                 <div>Loading profile</div>
             `;
             
-            // Try primary proxy first, then fallbacks
-            const urlsToTry = [PRIMARY_PROXY, ...FALLBACK_PROXIES];
-            let lastError = null;
+            // Try both URLs
+            const urls = [API_URL, FALLBACK_URL];
             
-            for (let i = 0; i < urlsToTry.length; i++) {
-                const url = urlsToTry[i];
-                const isFallback = i > 0;
-                
+            for (let i = 0; i < urls.length; i++) {
                 try {
-                    console.log(`📡 Attempt ${i + 1}/${urlsToTry.length}:`, url);
-                    
-                    if (isFallback) {
-                        loading.innerHTML = `
-                            <div class="spinner"></div>
-                            <div>Using fallback proxy... (${i}/${urlsToTry.length - 1})</div>
-                        `;
-                    }
+                    const url = urls[i];
+                    console.log(`📡 Attempt ${i + 1}/${urls.length}: ${url}`);
                     
                     const response = await fetch(url, {
-                        method: 'GET',
                         cache: 'no-store',
                         headers: {
                             'Cache-Control': 'no-cache',
@@ -229,84 +144,50 @@
                     });
                     
                     if (!response.ok) {
-                        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                        console.log(`❌ Attempt ${i + 1} failed: HTTP ${response.status}`);
+                        continue;
                     }
                     
                     const data = await response.json();
+                    console.log('✅ Data received:', data);
                     
-                    // Handle different proxy response formats
-                    let profileData = data;
-                    if (data.contents) {
-                        // allorigins format
-                        try {
-                            profileData = JSON.parse(data.contents);
-                        } catch (e) {
-                            throw new Error('Failed to parse allorigins response');
-                        }
+                    if (!data.title || !data.content) {
+                        throw new Error('Incomplete data');
                     }
                     
-                    // Check for errors
-                    if (profileData.error) {
-                        throw new Error(profileData.error + (profileData.message ? ': ' + profileData.message : ''));
-                    }
+                    document.title = data.title + ' | Norielix';
                     
-                    // Validate data
-                    if (!profileData.title || !profileData.content) {
-                        throw new Error('Incomplete data received');
+                    let html = `<h1>${escapeHtml(data.title)}</h1>`;
+                    if (data.image) {
+                        html += `<img src="${escapeHtml(data.image)}" alt="${escapeHtml(data.title)}" loading="lazy">`;
                     }
+                    html += data.content;
                     
-                    // SUCCESS - Display the profile
-                    displayProfile(profileData);
-                    console.log('✅ Profile loaded successfully (attempt ' + (i + 1) + ')');
+                    content.innerHTML = html;
+                    loading.style.display = 'none';
+                    content.style.display = 'block';
+                    
+                    console.log('✅ Profile loaded successfully');
                     return;
                     
                 } catch (error) {
-                    console.error(`❌ Attempt ${i + 1} failed:`, error.message);
-                    lastError = error;
-                    
-                    // If this was the last attempt, show error
-                    if (i === urlsToTry.length - 1) {
-                        throw error;
+                    console.error(`❌ Attempt ${i + 1} error:`, error.message);
+                    if (i === urls.length - 1) {
+                        loading.innerHTML = `
+                            <div class="error-container">
+                                <div class="icon">⚠️</div>
+                                <h3>Failed to load profile</h3>
+                                <p>Please refresh the page or try again later</p>
+                                <button class="retry-btn" onclick="loadProfile()">
+                                    🔄 Try Again
+                                </button>
+                            </div>
+                        `;
+                        loading.style.display = 'block';
                     }
-                    
-                    // Wait before retry (with exponential backoff)
-                    const delay = RETRY_DELAY * (i + 1);
-                    await new Promise(resolve => setTimeout(resolve, delay));
                 }
             }
-            
-            // If we get here, all attempts failed
-            throw lastError || new Error('All attempts failed');
         }
-        
-        // =============================================
-        // DISPLAY FUNCTION
-        // =============================================
-        function displayProfile(data) {
-            const loading = document.getElementById('loading');
-            const content = document.getElementById('content');
-            
-            // Update page title
-            document.title = data.title + ' | Norielix';
-            
-            // Build HTML
-            let html = `<h1>${escapeHtml(data.title)}</h1>`;
-            
-            if (data.image) {
-                html += `<img src="${escapeHtml(data.image)}" alt="${escapeHtml(data.title)}" loading="lazy">`;
-            }
-            
-            html += data.content;
-            
-            // Display content
-            content.innerHTML = html;
-            loading.style.display = 'none';
-            content.style.display = 'block';
-        }
-        
-        // =============================================
-        // UTILITY FUNCTIONS
-        // =============================================
         
         function escapeHtml(unsafe) {
             if (!unsafe) return '';
@@ -318,58 +199,7 @@
                 .replace(/'/g, "&#039;");
         }
         
-        function showError(error) {
-            const loading = document.getElementById('loading');
-            loading.innerHTML = `
-                <div class="error-container">
-                    <div class="icon">⚠️</div>
-                    <h3>Failed to load profile</h3>
-                    <p>Please refresh the page or try again later</p>
-                    <p style="font-size: 0.8rem; color: #cbd5e1; margin-top: 12px; word-break: break-all;">
-                        ${escapeHtml(error.message || 'Unknown error')}
-                    </p>
-                    <button class="retry-btn" onclick="handleRetry()">
-                        🔄 Try Again
-                    </button>
-                </div>
-            `;
-            loading.style.display = 'block';
-        }
-        
-        // =============================================
-        // RETRY HANDLER
-        // =============================================
-        let retryCount = 0;
-        const MAX_RETRY_COUNT = 3;
-        
-        function handleRetry() {
-            if (retryCount >= MAX_RETRY_COUNT) {
-                const loading = document.getElementById('loading');
-                loading.innerHTML = `
-                    <div class="error-container">
-                        <div class="icon">❌</div>
-                        <h3>Unable to load profile</h3>
-                        <p>Please try again later or contact support</p>
-                        <button class="retry-btn" onclick="location.reload()">
-                            🔄 Refresh Page
-                        </button>
-                    </div>
-                `;
-                loading.style.display = 'block';
-                return;
-            }
-            
-            retryCount++;
-            loadProfile().catch(showError);
-        }
-        
-        // =============================================
-        // START
-        // =============================================
-        
-        document.addEventListener('DOMContentLoaded', () => {
-            loadProfile().catch(showError);
-        });
+        document.addEventListener('DOMContentLoaded', loadProfile);
     </script>
 </body>
 </html>
