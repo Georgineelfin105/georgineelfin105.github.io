@@ -2,94 +2,34 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, shrink-to-fit=no">
-    
-    <title>About Mohammad Mahad | Founder, Norielix | Norielix</title>
-    <meta name="description" content="Mohammad Mahad is the Founder of Norielix, a unified digital ecosystem integrating cloud services, enterprise IT, and secure web infrastructure. He combines advanced technologies with robust engineering practices to build scalable, automated, and intelligently governed platforms focused on operational reliability.">
-    <meta name="keywords" content="Mohammad Mahad, Norielix, Founder of Norielix, Norielix Cloud Services, NCS, enterprise web infrastructure, cloud hosting platforms, unified digital ecosystem, web security">    
-    <meta name="robots" content="index,follow">
-    <meta name="googlebot" content="index, follow">
-    <link rel="canonical" href="https://github.io">
-    
-    <meta name="google-site-verification" content="YOUR_UNIQUE_KEY_HERE" />
-
-    <link rel="icon" href="https://norielix.com" type="image/x-icon">
-    <link rel="shortcut icon" href="https://norielix.com" type="image/x-icon">
-
-    <meta property="og:title" content="About Mohammad Mahad | Founder, Norielix">
-    <meta property="og:description" content="Mohammad Mahad is the Founder of Norielix, a unified digital ecosystem integrating cloud services, enterprise IT, and secure web infrastructure. He combines advanced technologies with robust engineering practices to build scalable, automated, and intelligently governed platforms focused on operational reliability.">
-    <meta property="og:url" content="https://github.io">
-    <meta property="og:type" content="article">
-    <meta property="og:site_name" content="Norielix">
-
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahad Profile</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
         }
-        html, body, #profile-container {
+        html, body {
             width: 100%;
             height: 100%;
+            overflow: hidden;
             background-color: #ffffff;
+        }
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
         }
     </style>
 </head>
 <body>
 
-    <div id="profile-container"></div>
+    <iframe src="https://www.norielix.com/mahad" title="Mahad Profile">
+        Your browser does not support iframes. 
+        <a href="https://www.norielix.com/mahad">Click here to view my profile</a>.
+     iframe>
 
-    <script>
-        (async function() {
-            const proxy = "https://corsproxy.io";
-            const target = "https://norielix.com";
-            const wrapper = document.getElementById("profile-container");
-            
-            try {
-                const res = await fetch(proxy + encodeURIComponent(target));
-                if (!res.ok) throw new Error();
-                let html = await res.text();
-                
-                html = html.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
-                
-                const shadow = wrapper.attachShadow({ mode: 'open' });
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-                
-                doc.querySelectorAll('a').forEach(link => {
-                    const href = link.getAttribute('href');
-                    if (href && !href.startsWith('http') && !href.startsWith('//')) {
-                        link.setAttribute('href', 'https://norielix.com' + (href.startsWith('/') ? '' : '/') + href);
-                    }
-                    link.setAttribute('target', '_top');
-                });
-
-                doc.querySelectorAll('img, link, script').forEach(el => {
-                    ['src', 'href'].forEach(attr => {
-                        const val = el.getAttribute(attr);
-                        if (val && !val.startsWith('http') && !val.startsWith('//') && !val.startsWith('data:')) {
-                            el.setAttribute(attr, 'https://norielix.com' + (val.startsWith('/') ? '' : '/') + val);
-                        }
-                    });
-                });
-
-                const base = document.createElement('base');
-                base.href = "https://norielix.com/";
-                shadow.appendChild(base);
-
-                const styles = doc.querySelectorAll('link[rel="stylesheet"], style');
-                styles.forEach(style => shadow.appendChild(style.cloneNode(true)));
-
-                const contentWrapper = document.createElement('div');
-                while (doc.body.firstChild) {
-                    contentWrapper.appendChild(doc.body.firstChild);
-                }
-                shadow.appendChild(contentWrapper);
-
-            } catch (err) {
-                window.location.replace(target);
-            }
-        })();
-    </script>
 </body>
 </html>
