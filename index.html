@@ -45,12 +45,33 @@
 <body>
 
     <iframe 
-        src="https://www.norielix.com/mahad" 
+        id="profile-frame"
+        src="https://norielix.com" 
         title="About Mohammad Mahad | Founder, Norielix"
-        sandbox="allow-scripts allow-same-origin allow-forms allow-top-navigation">
+        sandbox="allow-scripts allow-same-origin allow-forms allow-top-navigation allow-top-navigation-by-user-activation">
         Your browser does not support inline frames. 
-        <a href="https://www.norielix.com/mahad">Click here to view my profile</a>.
+        <a href="https://norielix.com">Click here to view my profile</a>.
     </iframe>
+
+    <script>
+        (function() {
+            const frame = document.getElementById('profile-frame');
+            
+            window.addEventListener('blur', function() {
+                if (document.activeElement === frame) {
+                    setTimeout(function() {
+                        try {
+                            if (frame.contentWindow.location.href !== "https://norielix.com") {
+                                window.top.location.href = "https://norielix.com";
+                            }
+                        } catch(e) {
+                            window.top.location.href = "https://norielix.com";
+                        }
+                    }, 200);
+                }
+            });
+        })();
+    </script>
 
 </body>
 </html>
